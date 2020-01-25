@@ -321,10 +321,10 @@ def writeGame():
 def writePlayers(): #Take all the player objects from Player class and using pandas dataframe, write to csv
     prepare_to_df_players = []
     for obj in gc.get_objects(): #creating a datafram of players and writing to file
-            if isinstance(obj, Player):
+        if isinstance(obj, Player):
             prepare_to_df_players.append([obj.pkey, obj.score, obj.standard_score, obj.last_game])
     df_players_to_write = pd.DataFrame(prepare_to_df_players,  columns = ["player_key", "XScore", "stand_score", "gameTag"])
-    df_players_to_write.to_csv(GameList2.location)
+    df_players_to_write.to_csv(GameList2.location, index = False)
         
 ###
 
