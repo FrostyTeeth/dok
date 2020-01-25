@@ -258,25 +258,23 @@ def add_scores_dict(): # add new scores to existing keys of players
             
 
             
-#Using Dictionaries, create instance of every player
-def create_player_instance(player_key,XScore,stand_score,last_game):
-    Player(player_key,XScore,stand_score,last_game)
-    
-def player_dict_to_instance(dictionary_score,dictionary_stand_score,last_game_dictionary):
-    for key in dictionary_score:
-        XScore = dictionary_score.get(str(key))
-        stand_score = dictionary_stand_score.get(str(key))
-        last_game = last_game_dictionary.get(str(key))
-        create_player_instance(key,XScore,stand_score,last_game)
-          
+
 def player_dictionary_managed():
     old = Player.player_old_dict, Player.player_old_stand_score, Player.player_old_last
-    new = [Player.all_new_games_player_dict, Player.player_new_stand_score, Player.player_new_last]
-    for x in old,new:
-        for y in x:
-            score,standscore,lastgame = y[0], y[1], y[2]
-            print(score, standscore,lastgame)
-            player_dict_to_instance(score,standscore,lastgame)
+    new = Player.all_new_games_player_dict, Player.player_new_stand_score, Player.player_new_last
+    for inputs in [old, new]:
+        _scoredict, _standscoredict, _lastgamedict = inputs
+        try:
+            for primary_key in _scoredict: #,new:
+                #for key in Player.player_old_dict:
+                score = _scoredict[primary_key]
+                standscore = _standscoredict[primary_key]
+                lastgame = _lastgamedict[primary_key]
+                #print(primary_key, score, standscore, lastgame)
+                Player(primary_key, score, standscore, lastgame)
+        except KeyError:
+            pass
+
             
 ###
 def check_if_duplicates(list_of_elems):
@@ -313,13 +311,12 @@ main()
 
 #for obj in gc.get_objects():
 #        if isinstance(obj, Player):
-#            print(str(obj.score))
+#            print(obj.pkey, obj.score, obj.standard_score, obj.last_game)
 
 
-print("yest")
+print("best")
 print("     ")
 print("     ")
-print(Player.player_old_stand_score)
 
 # write player dataframe to file.
 # Celebrate a milestone. phase 1 complete
