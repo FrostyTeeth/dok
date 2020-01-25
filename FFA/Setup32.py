@@ -31,6 +31,7 @@ class Player:
     
     all_new_games_player_dict = {}
     all_new_games_player_standard_dict = {}
+    all_new_games_player_last_dict = {}
     
     
     def __init__(self, player_key,xscore=0,standardized_score=0,last_game_played=None):
@@ -91,6 +92,7 @@ class Game:
         self.num_players = 0
         self.xscore_dict = {}
         self.stand_score_dict = {}
+        self.last_game_dict = {}
         Game.all_games.append(self)
 
     def __str__(self):
@@ -115,7 +117,14 @@ class Game:
         #i ="player_key", b ="stand_score"
         df = self.df
         self.stand_score_dict =  dict([(i,b) for i, b in zip(df.player_key, df.stand_score)]) #df.player_key and df.stand_score are not variables or methods
-           
+
+
+    def player_lastgame(self): # returns a dictionary of all player:scores in this file
+        #i ="player_key", b ="gameTag"
+        df = self.df
+        self.last_game_dict =  dict([(i,b) for i, b in zip(df.player_key, df.gameTag)]) #df.player_key and df.gameTag are not variables or methods
+
+
     
 class NewGame(Game):
     games_to_update = [] #a list of games than need that player scores need to be updated
@@ -157,11 +166,13 @@ def main():
     get_player_records()
     get_player_new_scores()
     get_player_new_stand_scores()
+    get_player_lastgames()
     merge_newscore_dic()
     add_scores_dict()
     player_dictionary_managed() #All have been added to class Player
 #   determine_num_groups_last() #For now, the group bonus will be static: not dependent on number of players
     writeGame() #write all the gameTags that have been record to file
+    writePlayers() #write all the player objects from Player class to csv file
 
     
 
@@ -221,18 +232,28 @@ def get_player_new_scores():
 def get_player_new_stand_scores():
     for games in NewGame.games_to_update:
         games.player_stand_scores()
-        ##don't worry about duplicate keys for now                
+        ##don't worry about duplicate keys for now 
+        
+def get_player_lastgames():
+    for games in NewGame.games_to_update:
+        games.player_lastgame()
+        ##don't worry about duplicate keys for now 
+               
         
 def merge_newscore_dic():#merge dictionaries together
     all_new_scores = {}
     all_new_standardized_scores = {}
+    all_new_last_games = {}
     for obj in gc.get_objects():
         if isinstance(obj, NewGame):
             all_new_scores.update(obj.xscore_dict)
             all_new_standardized_scores.update(obj.stand_score_dict)
+            #last game also needs to be done like thsi here!!!!
+            all_new_last_games.update(obj.last_game_dict)
             obj.apply_group_bonus() #apply group bonus
     Player.all_new_games_player_dict.update(all_new_scores)
     Player.all_new_games_player_standard_dict.update(all_new_standardized_scores) #might not need this
+    Player.all_new_games_player_last_dict.update(all_new_last_games)
 ##
         
 def determine_num_groups_last():
@@ -261,16 +282,14 @@ def add_scores_dict(): # add new scores to existing keys of players
 
 def player_dictionary_managed():
     old = Player.player_old_dict, Player.player_old_stand_score, Player.player_old_last
-    new = Player.all_new_games_player_dict, Player.player_new_stand_score, Player.player_new_last
+    new = Player.all_new_games_player_dict, Player.all_new_games_player_standard_dict, Player.all_new_games_player_last_dict #herefix
     for inputs in [old, new]:
         _scoredict, _standscoredict, _lastgamedict = inputs
         try:
-            for primary_key in _scoredict: #,new:
-                #for key in Player.player_old_dict:
+            for primary_key in _scoredict: 
                 score = _scoredict[primary_key]
                 standscore = _standscoredict[primary_key]
                 lastgame = _lastgamedict[primary_key]
-                #print(primary_key, score, standscore, lastgame)
                 Player(primary_key, score, standscore, lastgame)
         except KeyError:
             pass
@@ -296,8 +315,19 @@ def writeGame():
             write_list.append(obj.name)
     with open(GameList1.location, 'w') as f:
         f.write("["+",".join(map(str, write_list))+"]")
+
+
+
+def writePlayers(): #Take all the player objects from Player class and using pandas dataframe, write to csv
+    prepare_to_df_players = []
+    for obj in gc.get_objects(): #creating a datafram of players and writing to file
+            if isinstance(obj, Player):
+            prepare_to_df_players.append([obj.pkey, obj.score, obj.standard_score, obj.last_game])
+    df_players_to_write = pd.DataFrame(prepare_to_df_players,  columns = ["player_key", "XScore", "stand_score", "gameTag"])
+    df_players_to_write.to_csv(GameList2.location)
         
 ###
+
 GameList1 = Files()
 GameList1.location ="/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/GamesList.txt" 
 GameList2 = Files()
@@ -309,12 +339,11 @@ game_folder_path = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/game_results/"
 ##RUN     
 main()
 
-#for obj in gc.get_objects():
-#        if isinstance(obj, Player):
-#            print(obj.pkey, obj.score, obj.standard_score, obj.last_game)
 
 
-print("best")
+
+print("     ")
+print("ok")
 print("     ")
 print("     ")
 
