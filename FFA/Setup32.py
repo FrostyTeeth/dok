@@ -84,6 +84,7 @@ class Game:
 #Game log files and their attributes. Game logs have the meta data in its name.
     all_games =[]
     gsorted = []
+    current_round = []
     
     def __init__(self, name, df):
         self.name = name
@@ -177,7 +178,8 @@ def main():
     writeGame() #write all the gameTags that have been record to file
     writePlayers() #write all the player objects from Player class to csv file
     assign_sorted()
-    
+    groups_reporting()
+  
 
     
     
@@ -352,6 +354,42 @@ def getallgames():
 def assign_sorted():
     Game.gsorted = sort_games(getallgames())
 
+def find_like_latest(): # Go to the lastest game and find alike games 
+    version_alike = [Game.gsorted[-1]]
+    for x in Game.gsorted[0:-1]:
+        if x.version == Game.gsorted[-1].version:
+            version_alike.append(x)
+    version_alike = sort_games(version_alike) #sort and drill down again
+
+    series_alike = [version_alike[-1]] 
+    for y in version_alike[0:-1]:
+        if y.series == version_alike[-1].series:
+            series_alike.append(y)
+    series_alike = sort_games(series_alike)
+
+    round_alike = [series_alike[-1]]
+    for z in series_alike[0:-1]:
+        if z.round == series_alike[-1].round:
+            round_alike.append(z)
+    return round_alike
+
+def groups_reporting():
+    Game.current_round = find_like_latest() #shows which round we are on.
+    groups_reporting =[]
+    for v in Game.current_round:
+        groups_reporting.append(v.group)
+    groups_reporting = sorted(groups_reporting)
+    print("Groups reporting "+', '.join(groups_reporting)+" for round "+str(Game.current_round[0].round))
+
+
+
+
+
+
+
+
+
+
 
 
 #######
@@ -372,30 +410,6 @@ print("ok")
 print("     ")
 print("     ")
 
-
-def find_like_latest(): # Go to the lastest game and find alike games 
-    version_alike = [Game.gsorted[-1]]
-    for x in Game.gsorted[0:-1]:
-        if x.version == Game.gsorted[-1].version:
-            version_alike.append(x)
-    version_alike = sort_games(version_alike) #sort and drill down again
-
-    series_alike = [version_alike[-1]] 
-    for y in version_alike[0:-1]:
-        if y.series == version_alike[-1].series:
-            series_alike.append(y)
-    series_alike = sort_games(series_alike)
-
-    round_alike = [series_alike[-1]]
-    for z in series_alike[0:-1]:
-        if z.round == series_alike[-1].round:
-            round_alike.append(z)
-    return round_alike
-
-
-current_round = find_like_latest()
-for h in current_round:
-    print(h.name)
 
 
 
