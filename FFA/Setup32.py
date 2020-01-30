@@ -53,18 +53,20 @@ class Group:
         self.min = 3
         self.max = 6
 
+
 class Round:
 #info about a round. Every new series restarts counting rounds.
     def __init__(self, number):
         self.number = number
         self.groups_played = []
         self.players_played = []
+        self.is_complete = "No"
         
-    def update_games_played():
+    def update_games_played(): # a list of the gameTags in this round
         pass
-    def update_groups_played():
+    def update_groups_played(): # a list of groups played in this round
         pass
-    def update_players_played():
+    def update_players_played(): # a list of players played in this round
         pass
     
     
@@ -81,6 +83,7 @@ class Series:
 class Game:
 #Game log files and their attributes. Game logs have the meta data in its name.
     all_games =[]
+    gsorted = []
     
     def __init__(self, name, df):
         self.name = name
@@ -173,7 +176,7 @@ def main():
 #   determine_num_groups_last() #For now, the group bonus will be static: not dependent on number of players
     writeGame() #write all the gameTags that have been record to file
     writePlayers() #write all the player objects from Player class to csv file
-
+    assign_sorted()
     
 
     
@@ -187,7 +190,7 @@ def open_records(): # open every file in this folder that ends in csv. Add the n
     for filename in glob.glob(os.path.join(game_folder_path, '*.csv')):
         df = pd.read_csv(filename)
         gameTag = df["gameTag"][2]
-        instance1 = Game(gameTag,df)
+        Game(gameTag,df)
         checkGame(gameTag,glist,df) 
         
 def rgames(): #open a text file and read it
@@ -200,10 +203,10 @@ def rgames(): #open a text file and read it
     
 def checkGame(gameTag,glist,df): #if a gameTag isn't on in the master games list, add it to a new list
     if gameTag in glist:
-        instance2 = OldGame(gameTag,df)
+        OldGame(gameTag,df)
         print("Game "+gameTag+" already recorded")
     else:
-        instance3 = NewGame(gameTag,df)
+        NewGame(gameTag,df)
         print("Found " +gameTag+" as new game. Added to records.")
         
         
@@ -328,6 +331,30 @@ def writePlayers(): #Take all the player objects from Player class and using pan
         
 ###
 
+def sort_games(list_of_games): # sort by version, then series, then round, then group
+    games_sorted = []
+    for obj in list_of_games:
+        games_sorted.append(obj)
+    games_sorted.sort(key=lambda obj: obj.group)
+    games_sorted.sort(key=lambda obj: obj.round)
+    games_sorted.sort(key=lambda obj: obj.series)
+    games_sorted.sort(key=lambda obj: obj.version)  
+    return games_sorted
+
+def getallgames():
+    glist1 = []
+    for obj in gc.get_objects():
+        if isinstance(obj, NewGame) or isinstance(obj, OldGame):
+            glist1.append(obj)
+    return glist1
+  
+  
+def assign_sorted():
+    Game.gsorted = sort_games(getallgames())
+
+
+
+#######
 GameList1 = Files()
 GameList1.location ="/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/GamesList.txt" 
 GameList2 = Files()
@@ -340,15 +367,37 @@ game_folder_path = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/game_results/"
 main()
 
 
-
-
 print("     ")
 print("ok")
 print("     ")
 print("     ")
 
-# write player dataframe to file.
-# Celebrate a milestone. phase 1 complete
+
+def find_like_latest(): # Go to the lastest game and find alike games 
+    version_alike = [Game.gsorted[-1]]
+    for x in Game.gsorted[0:-1]:
+        if x.version == Game.gsorted[-1].version:
+            version_alike.append(x)
+    version_alike = sort_games(version_alike) #sort and drill down again
+
+    series_alike = [version_alike[-1]] 
+    for y in version_alike[0:-1]:
+        if y.series == version_alike[-1].series:
+            series_alike.append(y)
+    series_alike = sort_games(series_alike)
+
+    round_alike = [series_alike[-1]]
+    for z in series_alike[0:-1]:
+        if z.round == series_alike[-1].round:
+            round_alike.append(z)
+    return round_alike
+
+
+current_round = find_like_latest()
+for h in current_round:
+    print(h.name)
+
+
 
 # create a formula map for standard deviatoin score; like a x^2 function, where x is the standard_dev score and y is the bid index weight
 #    make it dependent on how many players were in the match
