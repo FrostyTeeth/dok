@@ -39,7 +39,12 @@ class Player:
         Player.player_list.append(self)
         
 
-        
+#    def how_long(self):
+#        gameTag = self.last_game
+#        self.series = self.name[5:7]
+#        self.round = self.name[7:9]
+#        self.group = self.name[9:10]
+#        self.num_players = self.name[10:11]
         
         
 class Group:
@@ -155,19 +160,32 @@ class OldGame(Game):
         
         
 class Bids:
-    def recency_schedule(self):
-        recency_dict = {}
-        for i in range(10):
-            recency_dict.update({i : (i/10 -1)**2})
 
-    def deviation_weight(dev_score, k=0.3):
-        k = 0.3
+    recency_dict = {}
+
+    def __init__(self):
+        self.bid = 0
+    
+    def set_dict():
+        for i in range(10):
+            Bids.recency_dict.update({i : (i/10 -1)**2})
+
+    def deviation_weight(self, dev_score, k=0.3):
         y = (-(dev_score**2)*(-dev_score)*k)
         if y < 0:
             z = max(y,-1)
         else:
             z = min(y,1)
         return z
+
+    def group_relation_mod(self,group_diff, m = 0.2):
+        x = (-(dev_score**2)*(-dev_score)*m)
+        return x
+
+
+    def get_bid(self, standard_deviation, rounds_ago, group_diff,):
+        Bids.recency_dict.get(group_diff)
+        self.bid = Bids.deviation_weight(standard_deviation) * Bids.recency_dict.get(rounds_ago) + Bids.group_relation_mod(group_diff)
 
 
 
@@ -191,7 +209,7 @@ def main():
     writePlayers() #write all the player objects from Player class to csv file
     assign_sorted()
     groups_reporting()
-  
+    Bids.set_dict()
 
     
     
@@ -287,12 +305,7 @@ def add_scores_dict(): # add new scores to existing keys of players
         if key in Player.all_new_games_player_dict:
             Player.player_old_dict[key] = Player.player_old_dict[key]+Player.all_new_games_player_dict[key] #add scores
             del Player.all_new_games_player_dict[key] #now that the scores are added, remove key from new list
-            #Player.player_old_last[key].update(Player.player_new_last[key]) #update the last game played to this current one
-            #del Player.player_new_last[key] #now that has been updated, remove the key and value from the new list
-            #Player.player_old_stand_score[key].update(Player.all_new_games_player_standard_dict[key]) #might not need this
-            #del Player.all_new_games_player_standard_dict[key] #might not need this
-            ##What is left is 2 dictionaries of players. One is an updated list of records that we had before, the other is any new players that haven't been in the records yet
-            ##Now, each dictionary can be seperately applied to the class Player in order to complete information about the player
+
             
 
             
@@ -418,7 +431,7 @@ main()
 
 
 print("     ")
-print("ok")
+print("you're doing great")
 print("     ")
 print("     ")
 
@@ -432,8 +445,6 @@ print("     ")
     
 
 
-# create a formula map for standard deviatoin score; like a x^2 function, where x is the standard_dev score and y is the bid index weight
-#    make it dependent on how many players were in the match ***skippped******
-# create a schedule for rounds since last played bid weight modifier
+
 # create a Player method that sets a bid price for each group
         
