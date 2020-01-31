@@ -12,10 +12,7 @@ class Files:
     pass
 
 
-
-
-                
-                
+               
 
 class Player:
 #Has to do with the player PK and their absolute and relative scores 
@@ -53,6 +50,9 @@ class Group:
         self.min = 3
         self.max = 6
 
+
+
+            
 
 class Round:
 #info about a round. Every new series restarts counting rounds.
@@ -155,7 +155,19 @@ class OldGame(Game):
         
         
 class Bids:
-    pass
+    def recency_schedule(self):
+        recency_dict = {}
+        for i in range(10):
+            recency_dict.update({i : (i/10 -1)**2})
+
+    def deviation_weight(dev_score, k=0.3):
+        k = 0.3
+        y = (-(dev_score**2)*(-dev_score)*k)
+        if y < 0:
+            z = max(y,-1)
+        else:
+            z = min(y,1)
+        return z
 
 
 
@@ -379,7 +391,7 @@ def groups_reporting():
     for v in Game.current_round:
         groups_reporting.append(v.group)
     groups_reporting = sorted(groups_reporting)
-    print("Groups reporting "+', '.join(groups_reporting)+" for round "+str(Game.current_round[0].round))
+    print("Groups reporting: "+', '.join(groups_reporting)+" for round "+str(Game.current_round[0].round))
 
 
 
@@ -413,8 +425,15 @@ print("     ")
 
 
 
+
+
+
+
+    
+
+
 # create a formula map for standard deviatoin score; like a x^2 function, where x is the standard_dev score and y is the bid index weight
-#    make it dependent on how many players were in the match
+#    make it dependent on how many players were in the match ***skippped******
 # create a schedule for rounds since last played bid weight modifier
 # create a Player method that sets a bid price for each group
         
