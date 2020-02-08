@@ -440,11 +440,9 @@ print("     ")
 
 
 
-
-
     
 
 
-
+#Determine how many rounds ago the player last played
 # create a Player method that sets a bid price for each group
         
