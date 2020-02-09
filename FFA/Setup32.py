@@ -61,6 +61,8 @@ class Group:
 
 class Round:
 #info about a round. Every new series restarts counting rounds.
+    next_round_players = []
+
     def __init__(self, number):
         self.number = number
         self.groups_played = []
@@ -209,7 +211,9 @@ def main():
     writePlayers() #write all the player objects from Player class to csv file
     assign_sorted()
     groups_reporting()
-    Bids.set_dict()
+    Bids.set_dict() # Sets formula for value of last game played recency 
+    get_players_for_next() #After manually donwloading a file from google sheets to location as .csv import primary keys of players that wish to play the next round
+    check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
 
     
     
@@ -407,13 +411,21 @@ def groups_reporting():
     print("Groups reporting: "+', '.join(groups_reporting)+" for round "+str(Game.current_round[0].round))
 
 
+##
+# Get Players for next Round
 
+def get_players_for_next(): #open a csv that has been downloaded from google sheets and read it
+    df_next_up = pd.read_csv(NextRound1.location)
+    for index, row in df_next_up.iterrows():
+        Round.next_round_players.append(row['Player_Key']) # Creates a list of player_keys that will play in the next round. These are not connencted to the player objects yet
 
-
-
-
-
-
+def check_if_players_have_record():
+    pkeys_list = []
+    for each in Player.player_list:
+        pkeys_list.append(each.pkey)
+    for i in Round.next_round_players:
+        if i not in pkeys_list:
+            Player(i)  #This adds a new player instance with default values. This instance won't be written to file.
 
 
 
@@ -423,7 +435,8 @@ GameList1.location ="/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/GamesList.txt"
 GameList2 = Files()
 GameList2.location = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/player_records.csv"
 game_folder_path = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/game_results/"
-
+NextRound1 = Files()
+NextRound1.location = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/Next_Round - Export.csv"
 
 
 ##RUN     
@@ -436,13 +449,17 @@ print("     ")
 print("     ")
 
 
+print(Round.next_round_players)
+
 
 
 
 
     
 
-
+#Get players next round from web
 #Determine how many rounds ago the player last played
+#Introduce new players that have no record of playing before
 # create a Player method that sets a bid price for each group
+
         
