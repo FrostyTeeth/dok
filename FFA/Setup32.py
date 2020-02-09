@@ -39,12 +39,13 @@ class Player:
         Player.player_list.append(self)
         
 
-#    def how_long(self):
-#        gameTag = self.last_game
-#        self.series = self.name[5:7]
-#        self.round = self.name[7:9]
-#        self.group = self.name[9:10]
-#        self.num_players = self.name[10:11]
+    def last_played(self):
+        self.version = self.last_game[3:5]
+        self.series = self.last_game[5:7]
+        self.round = self.last_game[7:9]
+        self.group = self.last_game[9:10]
+        self.num_players = self.last_game[10:11]
+        self.rounds_ago_player = 0
         
         
 class Group:
@@ -62,6 +63,8 @@ class Group:
 class Round:
 #info about a round. Every new series restarts counting rounds.
     next_round_players = []
+    last_series_round_penalty = 8
+    last_version_round_penalty = 20
 
     def __init__(self, number):
         self.number = number
@@ -428,6 +431,31 @@ def check_if_players_have_record():
             Player(i)  #This adds a new player instance with default values. This instance won't be written to file.
 
 
+##
+# Find When players last played
+def calc_recency_played():
+    temp_list = []
+    for i in Round.next_round_players:
+        for obj in gc.get_objects():
+            if isinstance(obj, Player):
+                if obj.pkey == i:
+                    temp_list.append(obj)
+    Round.next_round_players = temp_list
+    for u in Round.next_round_players:
+        try:
+            raise u.last_played()
+            if u.version == Game.current_round[0].version:
+                if u.series == Game.current_round[0].series:
+                    u.rounds_ago_player = Game.current_round[0].round - u.round
+                else:
+                    u.rounds_ago_player = Round.last_series_round_penalty
+            else:
+                u.rounds_ago_player = Round.last_version_round_penalty
+        except: #creates and exception for new players that haven't played before
+            u.rounds_ago_player = Game.current_round[0].round
+        
+
+
 
 #######
 GameList1 = Files()
@@ -444,20 +472,18 @@ main()
 
 
 print("     ")
-print("you're doing great")
+print("you're doing swell")
 print("     ")
 print("     ")
 
 
-print(Round.next_round_players)
-
+calc_recency_played()
 
 
 
 
     
 
-#Get players next round from web
 #Determine how many rounds ago the player last played
 #Introduce new players that have no record of playing before
 # create a Player method that sets a bid price for each group
