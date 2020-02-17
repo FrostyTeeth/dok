@@ -61,7 +61,7 @@ class Group:
 
     def __init__(self, name):
         self.name = name #A, B, C etc.
-        groups_made.append(self) #will this make a list of objects?
+        Group.groups_made.append(self) #will this make a list of objects?
 
 
     def contenders(self,one, two, three, four = None, five = None, six = None):
@@ -196,14 +196,10 @@ class Bids:
 
     def deviation_weight(self, dev_score, k=0.3):
         y = (-(dev_score**2)*(-dev_score)*k)
-        if y < 0:
-            z = max(y,-1)
-        else:
-            z = min(y,1)
-        return z
+        return y
 
     def group_relation_mod(self,group_diff, m = 0.2):
-        x = (-(dev_score**2)*(-dev_score)*m)
+        x = (-(group_diff**2)*(-group_diff)*m)
         return x
 
 
@@ -498,6 +494,7 @@ NextRound1 = Files()
 NextRound1.location = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/Next_Round - Export.csv"
 
 
+
 ##RUN     
 main()
 
@@ -515,23 +512,35 @@ def make_group():
         conditions = True
         while conditions == True:
             if len(temp_next_players) > 2:
-                Group(uppers[0])
-                uppers.pop(0)
-                #all players place bids
-                #add players with winning bid to group
-                #remove players from temp_next list
+                try:
+                    Group(uppers[0])
+                    uppers.pop(0)
+                    #all players place bids
+                    for p in Player.player_list:
+                        #determine distance from last group to this group
+                        #bid on this group.
+                        pass
+                    #add players with winning bid to group
+                    #remove players from temp_next list
+                except: #reached end of alphabet
+                    break
             elif 2 >= len(temp_next_players) > 0:
                 for obj in gc.get_objects(): #delete all objects of class Group
                     if isinstance(obj, Group):
                         del obj
                 conditions = False
-                break #start over
+                break #start over with setting conditions to false
             elif temp_next_players == 0:
-                conditions = False
+                conditions = False #not sure if this is necessary either?
                 Group.go = False
                 break #not sure if this is necessary, maybe just chaning the conditions cuases it to break
 
-make_group()
+
+#make_group()
+print(Player.player_list)
+
+
+
 
 # if number of players still in next to play list is greater than three, create a new instance of group starting from A and working down the list
 # create a Player method that sets a bid price for each group
