@@ -5,10 +5,12 @@ import numpy as np
 import os,glob
 import pandas as pd
 import gc
+import random
+import string
 
 
 
-class Files:
+class Files: #used for making global variables of file path locations
     pass
 
 
@@ -52,16 +54,33 @@ class Group:
 #Group size and order of groups. This is class is for both proscriptive computing and will be used for both past and future groups.
     group_bonus_dict = {"A":1.2,"B":1.1, "C":1.0, "D":.9, "E":.8, "F":.7, "G":.6, "H":.5, "I":.4, "J":.3, "K":.2, "L":.1}
     
-    def __init__(self):
-        self.min = 3
-        self.max = 6
+    group_min = 3
+    group_max = 6 
+    go = True # This is a status variable for creating more groups or not
+    groups_made = []
+
+    def __init__(self, name):
+        self.name = name #A, B, C etc.
+        groups_made.append(self) #will this make a list of objects?
+
+
+    def contenders(self,one, two, three, four = None, five = None, six = None):
+        self.one = one
+        self.two = two
+        self.three = three
+        self.four = four
+        self.five = five
+        self.six = six
+
+    def num_players_decide(): #use random for now, we'll use a statistic method to find nearby scores later
+        pass
 
 
 
             
 
 class Round:
-#info about a round. Every new series restarts counting rounds.
+#info about a round. Every new series restarts counting rounds. Dealing with past and future so maybe could be seperate classes?
     next_round_players = []
     last_series_round_penalty = 8
     last_version_round_penalty = 20
@@ -216,9 +235,13 @@ def main():
     groups_reporting()
     Bids.set_dict() # Sets formula for value of last game played recency 
     get_players_for_next() #After manually donwloading a file from google sheets to location as .csv import primary keys of players that wish to play the next round
-    check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
+    if FFA_limit(): #is thre more than 2 players? if True, go ahead
+        check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
+        calc_recency_played() #Find the difference between current round and when each individual player last played. outside round or series, there is a default variable.
 
-    
+
+    else:
+        print("Not enough Players for FFA")
     
     
 #########
@@ -453,9 +476,17 @@ def calc_recency_played():
                 u.rounds_ago_player = Round.last_version_round_penalty
         except: #creates and exception for new players that haven't played before
             u.rounds_ago_player = Game.current_round[0].round
-        
 
 
+
+def FFA_limit():
+    if len(Round.next_round_players) < 3:
+        print("Not enough players for any games of FFA")
+        Group.go = False
+        return False
+    else:
+        Group.go = True
+        return True
 
 #######
 GameList1 = Files()
@@ -472,20 +503,41 @@ main()
 
 
 print("     ")
-print("you're doing swell")
+print("you're doing gnar")
 print("     ")
 print("     ")
 
 
-calc_recency_played()
+def make_group():
+    while Group.go == True:
+        uppers = list(string.ascii_uppercase) #create a list of upper case letters
+        temp_next_players = Round.next_round_players
+        conditions = True
+        while conditions == True:
+            if len(temp_next_players) > 2:
+                Group(uppers[0])
+                uppers.pop(0)
+                #all players place bids
+                #add players with winning bid to group
+                #remove players from temp_next list
+            elif 2 >= len(temp_next_players) > 0:
+                for obj in gc.get_objects(): #delete all objects of class Group
+                    if isinstance(obj, Group):
+                        del obj
+                conditions = False
+                break #start over
+            elif temp_next_players == 0:
+                conditions = False
+                Group.go = False
+                break #not sure if this is necessary, maybe just chaning the conditions cuases it to break
 
+make_group()
 
-
-
-    
-
-#Determine how many rounds ago the player last played
-#Introduce new players that have no record of playing before
+# if number of players still in next to play list is greater than three, create a new instance of group starting from A and working down the list
 # create a Player method that sets a bid price for each group
-
+# create a list of playes still bidding
+# create a random.int method of selecting between 3-6 players ina group
+# take the highest rated players until a group is full
+# remove the players that have succesfully bid, out from the still bidding list
+#
         
