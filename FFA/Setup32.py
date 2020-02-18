@@ -85,7 +85,7 @@ class Group:
         self.group_players_next = []
 
     def num_players_decide(self): #use random for now, we'll use a statistic method to find nearby scores later
-        self.choose_num = random.randint(group_min, group_max)
+        self.choose_num = random.randint(Group.group_min, Group.group_max)
         return self.choose_num
 
 
@@ -218,7 +218,7 @@ class Bids:
 
     def get_bid(self, standard_deviation, rounds_ago, group_diff): ##higher groups are negative, lower groups are positive
         Bids.recency_dict.get(group_diff)
-        self.bid = Bids.deviation_weight(standard_deviation) * Bids.recency_dict.get(rounds_ago) + Bids.group_relation_mod(group_diff)
+        self.bid = Bids.deviation_weight(self, standard_deviation) * Bids.recency_dict.get(float(rounds_ago)) + Bids.group_relation_mod(self, group_diff)
         return self.bid
 
 
@@ -248,7 +248,6 @@ def main():
     check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
     calc_recency_played() #Find the difference between current round and when each individual player last played. outside round or series, there is a default variable.
     make_group()
-
     
 #########
         
@@ -500,12 +499,12 @@ def make_group():
                     for p in temp_next_players:#determine distance from last group to this group. Higher groups have lower number (they occur earlier in the list)
                         b = p.group
                         group_diff = alphabet.index(a) - alphabet.index(b) ##higher groups are negative, lower groups are positive
-                        this_group.bid_dict[p]  = Bids.get_bid(p.standard_score, p.rounds_ago, group_diff) + random.uniform(-0.00001, 0.00001) #add this player and score to this group dictionary # add noise
+                        this_group.bid_dict[p]  = Bids.get_bid(p, p.standard_score, p.rounds_ago_player, group_diff) + random.uniform(-0.00001, 0.00001) #add this player and score to this group dictionary # add noise
                     #! bid on this group.
                     #decide number of players in this group
                     this_group.num_players_decide()
                     try:
-                        n_largest_vals = nlargest( this_group.choose_num, this_group.bid_dict, key = this_group.bid_dict.get) #top x highest bids #add players with winning bid to group !! for some reason mos_common works to get the highest values??
+                        n_largest_vals = nlargest( 6, this_group.bid_dict, key = this_group.bid_dict.get) #top n highest bids #add players with winning bid to group 
                     except:
                         try:
                             n_largest_vals = nlargest(this_group.choose_num -1 , this_group.bid_dict, key = this_group.bid_dict.get)
@@ -518,8 +517,12 @@ def make_group():
                                 except:
                                     pass
                     #remove players from temp_next list
-                    for _ in this_group.group_players_next:
+
+                    
+                    for x in this_group.group_players_next:
+                        print("got this far")
                         temp_next_players.remove(this_group.group_players_next[0])
+                        
 
                     
                 except: #reached end of alphabet
