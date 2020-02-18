@@ -7,6 +7,7 @@ import pandas as pd
 import gc
 import random
 import string
+from collections import Counter #this counter techniques works even though it shouldn't?
 
 
 
@@ -79,9 +80,12 @@ class Group:
         self.four = four
         self.five = five
         self.six = six
+    
+    def no_use(self):
+        self.group_players_next = []
 
-    def num_players_decide(): #use random for now, we'll use a statistic method to find nearby scores later
-        pass
+    def num_players_decide(self): #use random for now, we'll use a statistic method to find nearby scores later
+        self.choose_num = random.randint(group_min, group_max)
 
 
 
@@ -528,10 +532,15 @@ def make_group():
                     for p in Player.player_list:#determine distance from last group to this group. Higher groups have lower number (they occur earlier in the list)
                         group_diff = alphabet.index(this_group.name) - alphabet.index(p.group) ##higher groups are negative, lower groups are positive
                         this_group.bid_dict[p]  = Bids.get_bid(p.standard_score, p.rounds_ago, group_diff) #add this player and score to this group dictionary
-                    #bid on this group.
-                        
-                    #add players with winning bid to group
+                    #! bid on this group.
+                    #decide number of players in this group 
+                    e = Counter(this_group.bid_dict) #Use Counter module
+                    this_group.group_players_next = [e.most_common(this_group.num_players_decide())] #top x highest bids #add players with winning bid to group !! for some reason mos_common works to get the highest values??
+                    
                     #remove players from temp_next list
+                    for _ in this_group.group_players_next:
+                        temp_next_players.remove(this_group.group_players_next[0])
+                    
                 except: #reached end of alphabet
                     break
             elif 2 >= len(temp_next_players) > 0:
