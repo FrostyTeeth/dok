@@ -49,12 +49,11 @@ class Player:
             self.round = self.last_game[7:9]
             self.group = self.last_game[9:10]
             self.num_players = self.last_game[10:11]
-            print("or print this")
+
         except:
             self.version = Game.current_round[0].version
             self.series = Game.current_round[0].series
             self.group = list(string.ascii_uppercase)[len(Round.next_round_players) // 5]
-            print(self.group)
 
         
         
@@ -69,6 +68,7 @@ class Group:
 
     def __init__(self, name):
         self.name = name #A, B, C etc.
+        self.bid_dict = {} #this will contain player objects as keys and bid ints as values
         Group.groups_made.append(self) #will this make a list of objects?
 
 
@@ -211,10 +211,10 @@ class Bids:
         return x
 
 
-    def get_bid(self, standard_deviation, rounds_ago, group_diff,):
+    def get_bid(self, standard_deviation, rounds_ago, group_diff): ##higher groups are negative, lower groups are positive
         Bids.recency_dict.get(group_diff)
         self.bid = Bids.deviation_weight(standard_deviation) * Bids.recency_dict.get(rounds_ago) + Bids.group_relation_mod(group_diff)
-
+        return self.bid
 
 
 ####### END CLASS DEFINITONS
@@ -515,19 +515,21 @@ print("     ")
 def make_group():
     while Group.go == True:
         uppers = list(string.ascii_uppercase) #create a list of upper case letters
+        alphabet = uppers
         temp_next_players = Round.next_round_players
         conditions = True
         while conditions == True:
             if len(temp_next_players) > 2:
                 try:
-                    Group(uppers[0])
+                    this_group = Group(uppers[0])
                     uppers.pop(0)
 
                     #all players place bids
-                    for p in Player.player_list:
-                        print(p.group) #determine distance from last group to this group
-                        #bid on this group.
-                        pass
+                    for p in Player.player_list:#determine distance from last group to this group. Higher groups have lower number (they occur earlier in the list)
+                        group_diff = alphabet.index(this_group.name) - alphabet.index(p.group) ##higher groups are negative, lower groups are positive
+                        this_group.bid_dict[p]  = Bids.get_bid(p.standard_score, p.rounds_ago, group_diff) #add this player and score to this group dictionary
+                    #bid on this group.
+                        
                     #add players with winning bid to group
                     #remove players from temp_next list
                 except: #reached end of alphabet
