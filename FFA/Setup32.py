@@ -7,7 +7,7 @@ import pandas as pd
 import gc
 import random
 import string
-from collections import Counter #this counter techniques works even though it shouldn't?
+from heapq import nlargest
 
 
 
@@ -86,6 +86,7 @@ class Group:
 
     def num_players_decide(self): #use random for now, we'll use a statistic method to find nearby scores later
         self.choose_num = random.randint(group_min, group_max)
+        return self.choose_num
 
 
 
@@ -501,20 +502,19 @@ def make_group():
                         group_diff = alphabet.index(a) - alphabet.index(b) ##higher groups are negative, lower groups are positive
                         this_group.bid_dict[p]  = Bids.get_bid(p.standard_score, p.rounds_ago, group_diff) + random.uniform(-0.00001, 0.00001) #add this player and score to this group dictionary # add noise
                     #! bid on this group.
-                    #decide number of players in this group 
-                    e = Counter(this_group.bid_dict) #Use Counter module to setup counting through with Counter
-                    
+                    #decide number of players in this group
+                    this_group.num_players_decide()
                     try:
-                        this_group.group_players_next = [e.most_common(this_group.num_players_decide())] #top x highest bids #add players with winning bid to group !! for some reason mos_common works to get the highest values??
+                        n_largest_vals = nlargest( this_group.choose_num, this_group.bid_dict, key = this_group.bid_dict.get) #top x highest bids #add players with winning bid to group !! for some reason mos_common works to get the highest values??
                     except:
                         try:
-                            this_group.group_players_next = [e.most_common(this_group.num_players_decide()-1)]
+                            n_largest_vals = nlargest(this_group.choose_num -1 , this_group.bid_dict, key = this_group.bid_dict.get)
                         except:
                             try:
-                                this_group.group_players_next = [e.most_common(this_group.num_players_decide()-2)]
+                                n_largest_vals = nlargest(this_group.choose_num -2 , this_group.bid_dict, key = this_group.bid_dict.get)
                             except:
                                 try:
-                                    this_group.group_players_next = [e.most_common(this_group.num_players_decide()-3)]
+                                    n_largest_vals = nlargest(this_group.choose_num -3, this_group.bid_dict, key = this_group.bid_dict.get)
                                 except:
                                     pass
                     #remove players from temp_next list
