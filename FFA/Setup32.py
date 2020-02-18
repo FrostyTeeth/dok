@@ -42,12 +42,20 @@ class Player:
         
 
     def last_played(self):
-        self.version = self.last_game[3:5]
-        self.series = self.last_game[5:7]
-        self.round = self.last_game[7:9]
-        self.group = self.last_game[9:10]
-        self.num_players = self.last_game[10:11]
         self.rounds_ago_player = 0
+        try:
+            self.version = self.last_game[3:5]
+            self.series = self.last_game[5:7]
+            self.round = self.last_game[7:9]
+            self.group = self.last_game[9:10]
+            self.num_players = self.last_game[10:11]
+            print("or print this")
+        except:
+            self.version = Game.current_round[0].version
+            self.series = Game.current_round[0].series
+            self.group = list(string.ascii_uppercase)[len(Round.next_round_players) // 5]
+            print(self.group)
+
         
         
 class Group:
@@ -231,14 +239,11 @@ def main():
     groups_reporting()
     Bids.set_dict() # Sets formula for value of last game played recency 
     get_players_for_next() #After manually donwloading a file from google sheets to location as .csv import primary keys of players that wish to play the next round
-    if FFA_limit(): #is thre more than 2 players? if True, go ahead
-        check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
-        calc_recency_played() #Find the difference between current round and when each individual player last played. outside round or series, there is a default variable.
+    FFA_limit() #is thre more than 2 players? if True, go ahead
+    check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
+    calc_recency_played() #Find the difference between current round and when each individual player last played. outside round or series, there is a default variable.
 
 
-    else:
-        print("Not enough Players for FFA")
-    
     
 #########
         
@@ -462,7 +467,7 @@ def calc_recency_played():
     Round.next_round_players = temp_list
     for u in Round.next_round_players:
         try:
-            raise u.last_played()
+            u.last_played()
             if u.version == Game.current_round[0].version:
                 if u.series == Game.current_round[0].series:
                     u.rounds_ago_player = Game.current_round[0].round - u.round
@@ -472,6 +477,8 @@ def calc_recency_played():
                 u.rounds_ago_player = Round.last_version_round_penalty
         except: #creates and exception for new players that haven't played before
             u.rounds_ago_player = Game.current_round[0].round
+
+            
 
 
 
@@ -500,7 +507,7 @@ main()
 
 
 print("     ")
-print("you're doing gnar")
+print("you're doing good buddy")
 print("     ")
 print("     ")
 
@@ -515,9 +522,10 @@ def make_group():
                 try:
                     Group(uppers[0])
                     uppers.pop(0)
+
                     #all players place bids
                     for p in Player.player_list:
-                        #determine distance from last group to this group
+                        print(p.group) #determine distance from last group to this group
                         #bid on this group.
                         pass
                     #add players with winning bid to group
@@ -537,7 +545,7 @@ def make_group():
 
 
 #make_group()
-print(Player.player_list)
+
 
 
 
