@@ -246,7 +246,7 @@ def main():
     FFA_limit() #is thre more than 2 players? if True, go ahead
     check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
     calc_recency_played() #Find the difference between current round and when each individual player last played. outside round or series, there is a default variable.
-
+    make_group()
 
     
 #########
@@ -482,7 +482,58 @@ def calc_recency_played():
         except: #creates and exception for new players that haven't played before
             u.rounds_ago_player = Game.current_round[0].round
 
-            
+
+def make_group():
+    while Group.go == True:
+        alphabet = list(string.ascii_uppercase) #create a list of upper case letters
+        uppers = list(string.ascii_uppercase)
+        temp_next_players = Round.next_round_players
+        conditions = True
+        while conditions == True:
+            if len(temp_next_players) > 2:
+                try:
+                    this_group = Group(uppers[0])
+                    uppers.pop(0)
+                    a = this_group.name
+                    #all players place bids
+                    for p in temp_next_players:#determine distance from last group to this group. Higher groups have lower number (they occur earlier in the list)
+                        b = p.group
+                        group_diff = alphabet.index(a) - alphabet.index(b) ##higher groups are negative, lower groups are positive
+                        this_group.bid_dict[p]  = Bids.get_bid(p.standard_score, p.rounds_ago, group_diff) + random.uniform(-0.00001, 0.00001) #add this player and score to this group dictionary # add noise
+                    #! bid on this group.
+                    #decide number of players in this group 
+                    e = Counter(this_group.bid_dict) #Use Counter module to setup counting through with Counter
+                    
+                    try:
+                        this_group.group_players_next = [e.most_common(this_group.num_players_decide())] #top x highest bids #add players with winning bid to group !! for some reason mos_common works to get the highest values??
+                    except:
+                        try:
+                            this_group.group_players_next = [e.most_common(this_group.num_players_decide()-1)]
+                        except:
+                            try:
+                                this_group.group_players_next = [e.most_common(this_group.num_players_decide()-2)]
+                            except:
+                                try:
+                                    this_group.group_players_next = [e.most_common(this_group.num_players_decide()-3)]
+                                except:
+                                    pass
+                    #remove players from temp_next list
+                    for _ in this_group.group_players_next:
+                        temp_next_players.remove(this_group.group_players_next[0])
+
+                    
+                except: #reached end of alphabet
+                    break
+            elif 2 >= len(temp_next_players) > 0:
+                for obj in gc.get_objects(): #delete all objects of class Group
+                    if isinstance(obj, Group):
+                        del obj
+                conditions = False
+                break #start over with setting conditions to false
+            elif temp_next_players == 0:
+                conditions = False #not sure if this is necessary either?
+                Group.go = False
+                break #not sure if this is necessary, maybe just chaning the conditions cuases it to break            
 
 
 
@@ -494,6 +545,13 @@ def FFA_limit():
     else:
         Group.go = True
         return True
+
+
+
+
+
+
+
 
 #######
 GameList1 = Files()
@@ -516,56 +574,6 @@ print("     ")
 print("     ")
 
 
-def make_group():
-    while Group.go == True:
-        uppers = list(string.ascii_uppercase) #create a list of upper case letters
-        alphabet = uppers
-        temp_next_players = Round.next_round_players
-        conditions = True
-        while conditions == True:
-            if len(temp_next_players) > 2:
-                try:
-                    this_group = Group(uppers[0])
-                    uppers.pop(0)
 
-                    #all players place bids
-                    for p in Player.player_list:#determine distance from last group to this group. Higher groups have lower number (they occur earlier in the list)
-                        group_diff = alphabet.index(this_group.name) - alphabet.index(p.group) ##higher groups are negative, lower groups are positive
-                        this_group.bid_dict[p]  = Bids.get_bid(p.standard_score, p.rounds_ago, group_diff) #add this player and score to this group dictionary
-                    #! bid on this group.
-                    #decide number of players in this group 
-                    e = Counter(this_group.bid_dict) #Use Counter module
-                    this_group.group_players_next = [e.most_common(this_group.num_players_decide())] #top x highest bids #add players with winning bid to group !! for some reason mos_common works to get the highest values??
-                    
-                    #remove players from temp_next list
-                    for _ in this_group.group_players_next:
-                        temp_next_players.remove(this_group.group_players_next[0])
-                    
-                except: #reached end of alphabet
-                    break
-            elif 2 >= len(temp_next_players) > 0:
-                for obj in gc.get_objects(): #delete all objects of class Group
-                    if isinstance(obj, Group):
-                        del obj
-                conditions = False
-                break #start over with setting conditions to false
-            elif temp_next_players == 0:
-                conditions = False #not sure if this is necessary either?
-                Group.go = False
-                break #not sure if this is necessary, maybe just chaning the conditions cuases it to break
-
-
-#make_group()
-
-
-
-
-
-# if number of players still in next to play list is greater than three, create a new instance of group starting from A and working down the list
-# create a Player method that sets a bid price for each group
-# create a list of playes still bidding
-# create a random.int method of selecting between 3-6 players ina group
-# take the highest rated players until a group is full
-# remove the players that have succesfully bid, out from the still bidding list
-#
+# Print the group names and the player keys to file
         
