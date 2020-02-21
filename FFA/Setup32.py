@@ -82,7 +82,7 @@ class Group:
         self.six = six
     
     def no_use(self):
-        self.group_players_next = []
+        self.thisgroup_players_next = []
 
     def num_players_decide(self): #use random for now, we'll use a statistic method to find nearby scores later
         self.choose_num = random.randint(Group.group_min, Group.group_max)
@@ -516,15 +516,19 @@ def make_group():
                                     n_largest_vals = nlargest(this_group.choose_num -3, this_group.bid_dict, key = this_group.bid_dict.get)
                                 except:
                                     pass
+                    #add the players to the the group
+
+                    this_group.thisgroup_players_next = n_largest_vals
+
+
+
                     #remove players from temp_next list
 
-                    
-                    for x in this_group.group_players_next:
-                        print("got this far")
-                        temp_next_players.remove(this_group.group_players_next[0])
+                    for slideplayersout in this_group.thisgroup_players_next:                      
+                        temp_next_players.remove(slideplayersout)
                         
+                    print("made it to here")     
 
-                    
                 except: #reached end of alphabet
                     break
             elif 2 >= len(temp_next_players) > 0:
