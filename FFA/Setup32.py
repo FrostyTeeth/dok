@@ -40,6 +40,9 @@ class Player:
         self.pkey = player_key
         self.last_game = last_game_played
         Player.player_list.append(self)
+
+    def __hash__(self): #attempt at making player objects work as keys in a dictionary
+        return hash(str(self))
         
 
     def last_played(self):
@@ -503,21 +506,24 @@ def make_group():
                     #! bid on this group.
                     #decide number of players in this group
                     this_group.num_players_decide()
-                    try:
-                        n_largest_vals = nlargest( 6, this_group.bid_dict, key = this_group.bid_dict.get) #top n highest bids #add players with winning bid to group 
-                    except:
-                        try:
-                            n_largest_vals = nlargest(this_group.choose_num -1 , this_group.bid_dict, key = this_group.bid_dict.get)
-                        except:
-                            try:
-                                n_largest_vals = nlargest(this_group.choose_num -2 , this_group.bid_dict, key = this_group.bid_dict.get)
-                            except:
-                                try:
-                                    n_largest_vals = nlargest(this_group.choose_num -3, this_group.bid_dict, key = this_group.bid_dict.get)
-                                except:
-                                    pass
-                    #add the players to the the group
+                    if len(temp_next_players) < this_group.choose_num:
+                        this_group.choose_num = len(temp_next_players)
 
+                    print("There are {} of players in group {}".format(this_group.choose_num, this_group.name))
+                    #try:
+                    n_largest_vals = nlargest(this_group.choose_num , this_group.bid_dict, key = this_group.bid_dict.get) #top n highest bids #add players with winning bid to group 
+                    # except:
+                    #     try:
+                    #         n_largest_vals = nlargest(this_group.choose_num -1 , this_group.bid_dict, key = this_group.bid_dict.get)
+                    #     except:
+                    #         try:
+                    #             n_largest_vals = nlargest(this_group.choose_num -2 , this_group.bid_dict, key = this_group.bid_dict.get)
+                    #         except:
+                    #             try:
+                    #                 n_largest_vals = nlargest(this_group.choose_num -3, this_group.bid_dict, key = this_group.bid_dict.get)
+                    #             except:
+                    #                 pass
+                    #add the players to the the group
                     this_group.thisgroup_players_next = n_largest_vals
 
 
@@ -526,21 +532,24 @@ def make_group():
 
                     for slideplayersout in this_group.thisgroup_players_next:                      
                         temp_next_players.remove(slideplayersout)
-                        
-                    print("made it to here")     
+                          
 
                 except: #reached end of alphabet
                     break
             elif 2 >= len(temp_next_players) > 0:
-                for obj in gc.get_objects(): #delete all objects of class Group
-                    if isinstance(obj, Group):
-                        del obj
+                # for obj in gc.get_objects(): #delete all objects of class Group
+                #     if isinstance(obj, Group):
+                #         del obj #this does not completely remove the groups! this is causing failure
+                # throwaway = Group("FArt") 
                 conditions = False
                 break #start over with setting conditions to false
-            elif temp_next_players == 0:
+            elif len(temp_next_players) == 0:
+                print("All players have been allocated to groups")
                 conditions = False #not sure if this is necessary either?
                 Group.go = False
-                break #not sure if this is necessary, maybe just chaning the conditions cuases it to break            
+                break #not sure if this is necessary, maybe just chaning the conditions cuases it to break 
+
+    print("loop exited")           
 
 
 
