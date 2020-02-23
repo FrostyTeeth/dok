@@ -76,14 +76,14 @@ class Group:
         Group.groups_made.append(self) #will this make a list of objects?
 
 
-    def contenders(self,one, two, three, four = None, five = None, six = None):
-        self.one = one
-        self.two = two
-        self.three = three
-        self.four = four
-        self.five = five
-        self.six = six
-    
+    def contenders(self, *args):
+        j = 0
+        for i in args:
+            contender = "contender"+str(j)
+            self.contender = i
+            j += 1
+
+
     def no_use(self):
         self.thisgroup_players_next = []
 
@@ -490,7 +490,8 @@ def make_group():
     while Group.go == True:
         alphabet = list(string.ascii_uppercase) #create a list of upper case letters
         uppers = list(string.ascii_uppercase)
-        temp_next_players = Round.next_round_players
+        temp_next_players = Round.next_round_players.copy()
+
         conditions = True
         while conditions == True:
             if len(temp_next_players) > 2:
@@ -524,6 +525,20 @@ def make_group():
                     #             except:
                     #                 pass
                     #add the players to the the group
+                    try:
+                        this_group.contenders(n_largest_vals[0],n_largest_vals[1], n_largest_vals[2], n_largest_vals[3], n_largest_vals[4], n_largest_vals[5])
+                    except:
+                        try:
+                            this_group.contenders(n_largest_vals[0],n_largest_vals[1], n_largest_vals[2], n_largest_vals[3], n_largest_vals[4])
+                        except:
+                            try:
+                                this_group.contenders(n_largest_vals[0],n_largest_vals[1], n_largest_vals[2], n_largest_vals[3])
+                            except:
+                                try:
+                                    this_group.contenders(n_largest_vals[0],n_largest_vals[1])
+                                except:
+                                    pass
+                    
                     this_group.thisgroup_players_next = n_largest_vals
 
 
@@ -542,6 +557,7 @@ def make_group():
                 #         del obj #this does not completely remove the groups! this is causing failure
                 # throwaway = Group("FArt") 
                 conditions = False
+                print('>>Start Over<<')
                 break #start over with setting conditions to false
             elif len(temp_next_players) == 0:
                 print("All players have been allocated to groups")
@@ -565,11 +581,17 @@ def FFA_limit():
 
 
 #
+def dfseries_maker(list_of_groups): #Make a vertical series of all players that in this positional 
+    thislist = []
+    for items in list_of_groups:
+        thislist.append(items.contender1)
+
 
 def populate_dataframe(): #Using all the groups created, populate a dataframe with the respective playerprimary keys into the dataframe. The Last column can be a suggested_gameTag
     #try passing a dict of objects that canbe converted to series-like
-    df_populate = pd.Dataframe({"Group" : 
-
+    df_populate = pd.Dataframe({"Group" : Group.groups_made,
+                                "Player1": map(dfseries_maker, Group.groups_made),
+                                "Player2": "two"
 
 
 
