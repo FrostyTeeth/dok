@@ -77,10 +77,19 @@ class Group:
 
 
     def contenders(self, *args):
-        j = 0
+        #defaults
+        self.contender1 = None
+        self.contender2 = None
+        self.contender3 = None 
+        self.contender4 = None
+        self.contender5 = None
+        self.contender6 = None
+
+        #overwrite defualts if they are created
+        j = 1
         for i in args:
             contender = "contender"+str(j)
-            self.contender = i
+            self.contender = i.pkey
             j += 1
 
 
@@ -156,6 +165,15 @@ class Game:
         self.round = self.name[7:9]
         self.group = self.name[9:10]
         self.num_players = self.name[10:11]
+
+    def recombine(self): #future round. for creating dataframe self is an old game that is used to increment to a new game
+        self.round = int(self.round)
+        roundnext = self.round + 1
+        if roundnext < 10:
+            roundnext = str(0)+ str(roundnext)
+        else:
+            roundnext = str(roundnext)
+        return str(self.version) + str(self.series) + str(roundnext)
     
     def player_scores(self): # returns a dictionary of all player:scores in this file
         #i ="player_key", b ="stand_score"
@@ -581,23 +599,32 @@ def FFA_limit():
 
 
 #
-def dfseries_maker(list_of_groups): #Make a vertical series of all players that in this positional 
-    thislist = []
-    for items in list_of_groups:
-        thislist.append(items.contender1)
+def make_rows():
+    data = []
+    for groupsmade in Group.groups_made:
+        row = []
+        sugtag = "FFA" + Game.current_round[0].recombine() + groupsmade.name + str(groupsmade.choose_num)
+        row.append(groupsmade.name)
+        row.append(groupsmade.contender1.pkey)
+        row.append(groupsmade.contender2.pkey)
+        row.append(groupsmade.contender3.pkey)
+        row.append(groupsmade.contender4.pkey)
+        row.append(groupsmade.contender5.pkey)
+        row.append(groupsmade.contender6.pkey)
+        row.append(sugtag)
+
+        data.append(row)
+        print(data)
+    return data
+
 
 
 def populate_dataframe(): #Using all the groups created, populate a dataframe with the respective playerprimary keys into the dataframe. The Last column can be a suggested_gameTag
-    #try passing a dict of objects that canbe converted to series-like
-    df_populate = pd.Dataframe({"Group" : Group.groups_made,
-                                "Player1": map(dfseries_maker, Group.groups_made),
-                                "Player2": "two"
+    columns = ["Group", "Player1", "Player2", "Player3", "Player4", "Player5", "Player6", "suggested_gameTag"]
+    data = make_rows()
 
-
-
-                                    })
-
-
+    df_populate = pd.DataFrame(data, index = Group.groups_made, columns= columns)
+    print(df_populate)
 
 #######
 GameList1 = Files()
@@ -621,7 +648,7 @@ print("you're doing good buddy")
 print("     ")
 print("     ")
 
-
+populate_dataframe()
 
 # Print the group names and the player keys to file
         
