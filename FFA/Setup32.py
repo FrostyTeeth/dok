@@ -549,8 +549,9 @@ def make_group():
                 Group.go = False
                 break #not sure if this is necessary, maybe just chaning the conditions cuases it to break 
 
-    print("loop exited")           
 
+
+#
 
 
 def FFA_limit():
@@ -563,9 +564,16 @@ def FFA_limit():
         return True
 
 
+#
+
+def populate_dataframe(): #Using all the groups created, populate a dataframe with the respective playerprimary keys into the dataframe. The Last column can be a suggested_gameTag
+    #try passing a dict of objects that canbe converted to series-like
+    df_populate = pd.Dataframe({"Group" : 
 
 
 
+
+                                    })
 
 
 
@@ -577,6 +585,8 @@ GameList2.location = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/player_records
 game_folder_path = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/game_results/"
 NextRound1 = Files()
 NextRound1.location = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/Next_Round - Export.csv"
+Allocated = Files()
+Allocated.location = "/Users/SteveGlenMBPGoodVibe/Program/dok/FFA/Allocated.csv"
 
 
 
