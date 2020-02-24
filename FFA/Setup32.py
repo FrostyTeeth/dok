@@ -84,14 +84,25 @@ class Group:
         self.contender4 = None
         self.contender5 = None
         self.contender6 = None
-
+        
         #overwrite defualts if they are created
-        j = 1
-        for i in args:
-            contender = "contender"+str(j)
-            self.contender = i.pkey
-            j += 1
-
+        args1 = list(args)
+        contenders_list = args1.copy()
+        self.contender1 = contenders_list.pop(0)
+        self.contender2 = contenders_list.pop(0)
+        self.contender3 = contenders_list.pop(0)
+        try:
+            self.contender4 = contenders_list.pop(0)
+            try:
+                self.contender5 = contenders_list.pop(0)
+                try:
+                    self.contender6 = contenders_list.pop(0)
+                except:
+                    pass
+            except:
+                pass
+        except:
+            pass
 
     def no_use(self):
         self.thisgroup_players_next = []
@@ -249,6 +260,7 @@ class Bids:
 
 
 def main():
+    print_opener()
     open_records()
     make_games_metadata()
     get_player_records()
@@ -261,17 +273,33 @@ def main():
 #   determine_num_groups_last() #For now, the group bonus will be static: not dependent on number of players
     writeGame() #write all the gameTags that have been record to file
     writePlayers() #write all the player objects from Player class to csv file
+    print_write()
     assign_sorted()
     groups_reporting()
+    print_begin_matchmaking()
     Bids.set_dict() # Sets formula for value of last game played recency 
     get_players_for_next() #After manually donwloading a file from google sheets to location as .csv import primary keys of players that wish to play the next round
     FFA_limit() #is thre more than 2 players? if True, go ahead
     check_if_players_have_record() #Check if any of these player keys are new, if they are, create a new instance of Player for each with default values
     calc_recency_played() #Find the difference between current round and when each individual player last played. outside round or series, there is a default variable.
-    make_group()
+    make_group() #Makes groups for players, and puts the highest bidding players in the group.
+    write_allocated(populate_dataframe()) #writes the groups w/players for next round to file.
     
 #########
-        
+
+def print_opener():
+    print("")
+    print("---Opening Records---")
+
+def print_write():
+    print("---Game Records Writen to File---")
+
+def print_begin_matchmaking():
+    print("")
+    print("---Begin Matchmaking---")
+
+
+
 # Begin open_records()        
 def open_records(): # open every file in this folder that ends in csv. Add the new games to a list in Game
     glist = rgames()
@@ -466,6 +494,7 @@ def groups_reporting():
 ##
 # Get Players for next Round
 
+
 def get_players_for_next(): #open a csv that has been downloaded from google sheets and read it
     df_next_up = pd.read_csv(NextRound1.location)
     for index, row in df_next_up.iterrows():
@@ -528,7 +557,7 @@ def make_group():
                     if len(temp_next_players) < this_group.choose_num:
                         this_group.choose_num = len(temp_next_players)
 
-                    print("There are {} of players in group {}".format(this_group.choose_num, this_group.name))
+                    print("There are {} players in group {}".format(this_group.choose_num, this_group.name))
                     #try:
                     n_largest_vals = nlargest(this_group.choose_num , this_group.bid_dict, key = this_group.bid_dict.get) #top n highest bids #add players with winning bid to group 
                     # except:
@@ -553,7 +582,7 @@ def make_group():
                                 this_group.contenders(n_largest_vals[0],n_largest_vals[1], n_largest_vals[2], n_largest_vals[3])
                             except:
                                 try:
-                                    this_group.contenders(n_largest_vals[0],n_largest_vals[1])
+                                    this_group.contenders(n_largest_vals[0],n_largest_vals[1], n_largest_vals[2])
                                 except:
                                     pass
                     
@@ -573,11 +602,14 @@ def make_group():
                 # for obj in gc.get_objects(): #delete all objects of class Group
                 #     if isinstance(obj, Group):
                 #         del obj #this does not completely remove the groups! this is causing failure
-                # throwaway = Group("FArt") 
+                # throwaway = Group("FArt")
+
+                Group.groups_made = [] #reset
                 conditions = False
                 print('>>Start Over<<')
                 break #start over with setting conditions to false
             elif len(temp_next_players) == 0:
+                print("")
                 print("All players have been allocated to groups")
                 conditions = False #not sure if this is necessary either?
                 Group.go = False
@@ -608,13 +640,22 @@ def make_rows():
         row.append(groupsmade.contender1.pkey)
         row.append(groupsmade.contender2.pkey)
         row.append(groupsmade.contender3.pkey)
-        row.append(groupsmade.contender4.pkey)
-        row.append(groupsmade.contender5.pkey)
-        row.append(groupsmade.contender6.pkey)
-        row.append(sugtag)
+        try:
+            row.append(groupsmade.contender4.pkey)
+        except:
+            row.append("None")
+        try:
+            row.append(groupsmade.contender5.pkey)
+        except:
+            row.append("None")
+        try:
+            row.append(groupsmade.contender6.pkey)
+        except:
+            row.append("None")
+        finally:
+            row.append(sugtag)
 
         data.append(row)
-        print(data)
     return data
 
 
@@ -623,8 +664,13 @@ def populate_dataframe(): #Using all the groups created, populate a dataframe wi
     columns = ["Group", "Player1", "Player2", "Player3", "Player4", "Player5", "Player6", "suggested_gameTag"]
     data = make_rows()
 
-    df_populate = pd.DataFrame(data, index = Group.groups_made, columns= columns)
+    df_populate = pd.DataFrame(data, columns= columns)
     print(df_populate)
+    return df_populate
+
+
+def write_allocated(df):
+    df.to_csv(Allocated.location, index = False)
 
 #######
 GameList1 = Files()
@@ -644,11 +690,9 @@ main()
 
 
 print("     ")
-print("you're doing good buddy")
-print("     ")
 print("     ")
 
-populate_dataframe()
+
 
 # Print the group names and the player keys to file
         
